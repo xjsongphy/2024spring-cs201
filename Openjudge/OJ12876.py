@@ -1,3 +1,4 @@
+"""于2024-3-5测试通过"""
 count = 1
 while True:
     p, e, i, d = map(int, input().split())
