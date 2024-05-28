@@ -1,1 +1,2 @@
-print(len({}))
+if 0:
+    print(1)
