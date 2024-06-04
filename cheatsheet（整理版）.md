@@ -93,18 +93,9 @@ math.factorial(n) == n!
 
 6.`ord()`把字符变为ASCII，`chr()`把ASCII变为字符
 
-7.年份
+7.`calendar.isleap(year)`返回T/F判断闰年
 
-```python
-import calendar
-calendar.isleap(year)	#返回T/F判断闰年
-```
-
-8.旋转矩阵
-
-```python
-for a1, a2, ..., am in zip(b1, b2, ..., bn)
-```
+8.`for a1, a2, ..., am in zip(b1, b2, ..., bn)`旋转矩阵
 
 9.排列组合
 
@@ -190,6 +181,24 @@ for item in d:
 from collections import Counter
 
 c = Counter(list)			#返回计数字典
+```
+
+### 欧拉筛
+
+```python
+lim = LIMIT
+nums = {i: 1 for i in range(2, lim + 1)}
+primes = []
+
+for i in range(2, max_sqrt + 1):
+    if nums[i]:
+        primes.append(i)
+    for j in primes:
+        if i*j > lim:		#大于边界值时停止
+            break
+        nums[i*j] = 0
+        if i % j == 0:		#保证每个数被最小的因数筛掉
+            break
 ```
 
 # Part 2：排序
@@ -296,6 +305,8 @@ print(ans)
 ```
 
 ### 最大矩形面积问题（单调栈）
+
+​	略。
 
 ### 出栈序列统计（卡特兰数）
 
@@ -629,6 +640,20 @@ while heap:
 ## 强连通图（Kosaraju/2 DFS）
 
 ```python
+def dfs1(graph, node, visited, stack):
+    visited[node] = True
+    for neighbor in graph[node]:
+        if not visited[neighbor]:
+            dfs1(graph, neighbor, visited, stack)
+    stack.append(node)
+
+def dfs2(graph, node, visited, component):
+    visited[node] = True
+    component.append(node)
+    for neighbor in graph[node]:
+        if not visited[neighbor]:
+            dfs2(graph, neighbor, visited, component)
+
 def kosaraju(graph):
    # Step 1: Perform first DFS to get finishing times
    stack = []
@@ -662,35 +687,27 @@ def kosaraju(graph):
 ### 前缀中的周期
 
 ```python
-case = 0
-while True:
-    n = int(input())
-    if n == 0:
-        break
+n = int(input())
+s = input()
+ne = [0]*n
+for i in range(1, n):			# 建next数组
+    if ne[i - 1] == 0:
+        ne[i] = (s[i] == s[0])
+    else:
+        idx = ne[i - 1]
+        while True:
+            if idx == 0 and s[0] != s[i]:
+                ne[i] = 0
+                break
 
-    case += 1
-    print(f"Test case #{case}")
-    s = input()
-    ne = [0]*n
-    for i in range(1, n):			# 建next数组
-        if ne[i - 1] == 0:
-            ne[i] = (s[i] == s[0])
-        else:
-            idx = ne[i - 1]
-            while True:
-                if idx == 0 and s[0] != s[i]:
-                    ne[i] = 0
-                    break
+            if s[i] == s[idx]:
+                ne[i] = idx + 1
+                break
+            else:
+                idx = ne[idx - 1]
 
-                if s[i] == s[idx]:
-                    ne[i] = idx + 1
-                    break
-                else:
-                    idx = ne[idx - 1]
-
-        if (i + 1) % (i + 1 - ne[i]) == 0 and ne[i]:
-            print(i + 1, (i + 1) // (i + 1 - ne[i]))
-    print()
+    if (i + 1) % (i + 1 - ne[i]) == 0 and ne[i]:
+        print(i + 1, (i + 1) // (i + 1 - ne[i]))
 ```
 
 ## 动态规划（DP）
@@ -739,13 +756,8 @@ print(v)
 ### 定容背包问题
 
 ```python
-for i in range(1, n):
-    for j in range(t + 1):
-        dp[i][j] = dp[i - 1][j]
-        if j < v[i]:
-            continue
-        if dp[i - 1][j - w[i]] != -1:			#若容量j-w[i]存在定容分配，才可以更新dp[i][j]
-            dp[i][j] = max(dp[i][j], v[i] + dp[i - 1][j - v[i]])
+if dp[i - 1][j - w[i]] != -1:			#若容量j-w[i]存在定容分配，才可以更新dp[i][j]
+    dp[i][j] = max(dp[i][j], v[i] + dp[i - 1][j - v[i]])
 ```
 
 ### 分组背包问题
@@ -760,11 +772,7 @@ for k in range(1, ts + 1): 					#循环每一组
 
 ### 背包问题最优解方案数
 
-​	$f_{i,j}$为在只能放前$i$个物品的情况下，刚好装满容量为$j$的背包所能达到的最大总价值，$g_{i,j}$表示对应的方案数。
-
-转移方程：
-
-​	如果$f_{i,j}=f_{i-1,j}$且$f_{i,j}\neq f_{i-1,j-w}+v$说明我们此时不选择把物品放入背包更优，方案数由$g_{i-1,j}$转移过来；如果$f_{i,j}\neq f_{i-1,j}$且$f_{i,j}=f_{i-1,j-w}+v$说明我们此时选择把物品放入背包更优，方案数由$g_{i-1,j-w}$转移过来；==如果$f_{i,j}=f_{i-1,j}$且$f_{i,j}=f_{i-1,j-w}+v$说明放入或不放入都能取得最优解，方案数由$g_{i-1,j}$和$g_{i-1,j-w}$转移过来。==
+​	$f_{i,j}$为在只能放前$i$个物品的情况下，刚好装满容量为$j$的背包所能达到的最大总价值，$g_{i,j}$表示对应的方案数。如果$f_{i,j}=f_{i-1,j}$且$f_{i,j}\neq f_{i-1,j-w}+v$说明我们此时不选择把物品放入背包更优，方案数由$g_{i-1,j}$转移过来；如果$f_{i,j}\neq f_{i-1,j}$且$f_{i,j}=f_{i-1,j-w}+v$说明我们此时选择把物品放入背包更优，方案数由$g_{i-1,j-w}$转移过来；==如果$f_{i,j}=f_{i-1,j}$且$f_{i,j}=f_{i-1,j-w}+v$说明放入或不放入都能取得最优解，方案数由$g_{i-1,j}$和$g_{i-1,j-w}$转移过来。==
 
 ### 二进制分组
 
@@ -952,33 +960,7 @@ print(ans)
 
 ### 4 Values whose Sum is 0
 
-```python
-a_ls, b_ls, c_ls, d_ls = [], [], [], []
-total = 0
-n = int(input())
-for i in range(n):
-    a, b, c, d = map(int, input().split())
-    a_ls.append(a)
-    b_ls.append(b)
-    c_ls.append(c)
-    d_ls.append(d)
-
-ab = {}
-for a in a_ls:
-    for b in b_ls:
-        t = a + b
-        if t in ab:
-            ab[t] += 1
-        else:
-            ab[t] = 1
-
-for c in c_ls:
-    for d in d_ls:
-        t = c + d
-        if -t in ab:
-            total += ab[-t]
-print(total)
-```
+​	略。枚举c和d时不存储，直接计算，节省内存。
 
 # Part 7：正则表达式
 
@@ -990,19 +972,17 @@ print(total)
 
 #### 或运算：
 
-`a (cat|dog)` 匹配 a cat or a dog
-
-`a cat|dog` 匹配 a cat or dog
+`a (cat|dog)` 匹配 a cat or a dog			`a cat|dog` 匹配 a cat or dog
 
 #### 字符类：
 
-#### ![image-20240604203413199](https://raw.githubusercontent.com/xjsongphy/repository_for_typora/main/img/202406042034275.png)元字符：
+![image-20240604214556167](https://raw.githubusercontent.com/xjsongphy/repository_for_typora/main/img/202406042145242.png)
+
+#### 元字符：
 
 #### ![image-20240604203425359](https://raw.githubusercontent.com/xjsongphy/repository_for_typora/main/img/202406042034450.png)贪婪匹配/懒惰匹配：
 
-`<.+>` 贪婪匹配
-
-`<.+?>`  ? 设置为懒惰匹配
+`<.+>` 贪婪匹配							`<.+?>`  ? 设置为懒惰匹配
 
 #### 模块引入：
 
